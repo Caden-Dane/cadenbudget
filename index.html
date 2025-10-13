@@ -6,11 +6,7 @@
   <title>Personal Budget Tracker</title>
   <style>
     /* Simple Reset */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -19,201 +15,81 @@
       line-height: 1.6;
     }
 
-    .container {
-      max-width: 960px;
-      margin: auto;
-      padding: 20px;
-    }
+    .container { max-width: 960px; margin: auto; padding: 20px; }
 
-    header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    header { text-align: center; margin-bottom: 30px; }
 
-    h1 {
-      font-size: 2.2em;
-      margin-bottom: 0.2em;
-      color: #2d2d2d;
-    }
+    h1 { font-size: 2.2em; margin-bottom: 0.2em; color: #2d2d2d; }
 
-    .tagline {
-      font-size: 1em;
-      color: #666;
-    }
+    .tagline { font-size: 1em; color: #666; }
 
-    h2 {
-      margin-top: 30px;
-      margin-bottom: 10px;
-      font-size: 1.5em;
-      color: #2d2d2d;
-    }
+    h2 { margin-top: 30px; margin-bottom: 10px; font-size: 1.5em; color: #2d2d2d; }
 
     /* Summary Cards */
-    .summary-cards {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
+    .summary-cards { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
 
     .card {
-      flex: 1;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      text-align: center;
+      flex: 1; background-color: #fff; padding: 20px; border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;
     }
 
-    .card h3 {
-      margin-bottom: 5px;
-      font-size: 1.1em;
-      color: #555;
-    }
-
-    .card p {
-      font-size: 1.4em;
-      font-weight: bold;
-      color: #2d86ff;
-    }
+    .card h3 { margin-bottom: 5px; font-size: 1.1em; color: #555; }
+    .card p { font-size: 1.4em; font-weight: bold; color: #2d86ff; }
 
     /* Forms */
-    form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
+    form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
 
     form label {
-      flex: 1 1 200px;
-      display: flex;
-      flex-direction: column;
-      font-size: 0.9em;
-      color: #444;
+      flex: 1 1 200px; display: flex; flex-direction: column;
+      font-size: 0.9em; color: #444;
     }
 
-    form input[type="text"],
-    form input[type="number"] {
-      padding: 8px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1em;
+    form input[type="text"], form input[type="number"] {
+      padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em;
     }
 
     form button {
-      padding: 10px 20px;
-      background-color: #2d86ff;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-      flex: 0 0 auto;
+      padding: 10px 20px; background-color: #2d86ff; color: #fff; border: none;
+      border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out; flex: 0 0 auto;
     }
+    form button:hover { background-color: #1c5fbf; }
 
-    form button:hover {
-      background-color: #1c5fbf;
-    }
-
-    .warning {
-      margin-top: 5px;
-      font-size: 0.9em;
-      color: #d9534f;
-    }
-
-    .hidden {
-      display: none;
-    }
+    .warning { margin-top: 5px; font-size: 0.9em; color: #d9534f; }
+    .hidden { display: none; }
 
     /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-
-    table th,
-    table td {
-      padding: 8px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-
-    table th {
-      background-color: #f1f2f6;
-      font-weight: bold;
-    }
-
-    tr.over-limit {
-      background-color: #ffe6e6;
-    }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    table th, table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+    table th { background-color: #f1f2f6; font-weight: bold; }
+    tr.over-limit { background-color: #ffe6e6; }
 
     /* Progress Bars */
-    .progress {
-      background-color: #e9ecef;
-      border-radius: 4px;
-      overflow: hidden;
-      height: 14px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      background-color: #2d86ff;
-      transition: width 0.3s ease-in-out;
-    }
+    .progress { background-color: #e9ecef; border-radius: 4px; overflow: hidden; height: 14px; }
+    .progress-bar { height: 100%; background-color: #2d86ff; transition: width 0.3s ease-in-out; }
 
     /* Controls */
-    #controls {
-      margin-top: 20px;
-    }
-
-    #controls button {
-      background-color: #d9534f;
-    }
-
-    #controls button:hover {
-      background-color: #c9302c;
-    }
+    #controls { margin-top: 20px; }
+    #controls button { background-color: #d9534f; }
+    #controls button:hover { background-color: #c9302c; }
 
     /* Delete Buttons in Expense Table */
     .delete-btn {
-      padding: 6px 12px;
-      background-color: #dc3545;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      transition: background-color 0.2s ease-in-out;
+      padding: 6px 12px; background-color: #dc3545; color: #fff; border: none;
+      border-radius: 4px; cursor: pointer; font-size: 0.85em; transition: background-color 0.2s ease-in-out;
     }
-
-    .delete-btn:hover {
-      background-color: #bd2130;
-    }
+    .delete-btn:hover { background-color: #bd2130; }
 
     /* Responsive */
     @media (max-width: 600px) {
-      .summary-cards {
-        flex-direction: column;
-      }
-      form label {
-        flex: 1 1 100%;
-      }
-      form button {
-        width: 100%;
-      }
+      .summary-cards { flex-direction: column; }
+      form label { flex: 1 1 100%; }
+      form button { width: 100%; }
     }
 
     /* Reset message style */
     .reset-message {
-      background: #e8f5e9;
-      color: #2e7d32;
-      border: 1px solid #c8e6c9;
-      padding: 10px 12px;
-      border-radius: 6px;
-      margin-bottom: 16px;
+      background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9;
+      padding: 10px 12px; border-radius: 6px; margin-bottom: 16px;
     }
   </style>
 </head>
@@ -300,9 +176,7 @@
             <th>Progress</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- Categories will be inserted here dynamically -->
-        </tbody>
+        <tbody></tbody>
       </table>
     </section>
 
@@ -318,9 +192,7 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- Expenses will be inserted here dynamically -->
-        </tbody>
+        <tbody></tbody>
       </table>
     </section>
 
@@ -331,33 +203,12 @@
   </div>
 
   <script>
-    /*
-     * Personal Budget Tracker
-     *
-     * This script manages the state of the budget app using browser localStorage.
-     * It allows users to record income and expenses, set monthly spending limits
-     * for categories, and displays warnings when those limits are approached or
-     * exceeded. Data resets automatically at the start of a new month.
-     */
     (function () {
       'use strict';
 
       const STORAGE_KEY = 'budgetData';
-
-      /**
-       * Holds the current budget data for this month. Structure:
-       * {
-       *   monthYear: 'YYYY-MM',
-       *   income: Number,
-       *   expenses: Array<{ id, date, category, amount, note }>,
-       *   limits: { [category: string]: Number }
-       * }
-       */
       let budgetData;
 
-      /**
-       * Initialize the app: load data, check month reset, set up event listeners and render UI.
-       */
       function init() {
         loadData();
         checkMonthReset();
@@ -365,59 +216,34 @@
         updateUI();
       }
 
-      /**
-       * Load data from localStorage or initialize a fresh record.
-       */
       function loadData() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          try {
-            budgetData = JSON.parse(raw);
-          } catch (e) {
-            console.error('Failed to parse stored data, initializing new data.', e);
-            budgetData = createNewBudgetData();
-          }
+          try { budgetData = JSON.parse(raw); }
+          catch { budgetData = createNewBudgetData(); }
         } else {
           budgetData = createNewBudgetData();
         }
       }
 
-      /**
-       * Save current budget data to localStorage.
-       */
       function saveData() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData));
       }
 
-      /**
-       * Return a new budget data object for the current month.
-       */
       function createNewBudgetData() {
-        return {
-          monthYear: getCurrentMonthYear(),
-          income: 0,
-          expenses: [],
-          limits: {}
-        };
+        return { monthYear: getCurrentMonthYear(), income: 0, expenses: [], limits: {} };
       }
 
-      /**
-       * Get the current month-year string in format YYYY-MM.
-       */
       function getCurrentMonthYear() {
         const now = new Date();
         return now.toISOString().slice(0, 7);
       }
 
-      /**
-       * If stored data is from a previous month, reset the data for the new month.
-       */
       function checkMonthReset() {
         const current = getCurrentMonthYear();
         if (budgetData.monthYear !== current) {
           budgetData = createNewBudgetData();
           saveData();
-          // Inform user about reset via alert within the page.
           const resetMessage = document.createElement('div');
           resetMessage.className = 'reset-message';
           resetMessage.textContent = 'New month detected. Budget data has been reset.';
@@ -426,11 +252,7 @@
         }
       }
 
-      /**
-       * Set up all form submissions and button actions.
-       */
       function setupEventListeners() {
-        // Add Income
         document.getElementById('income-form').addEventListener('submit', (e) => {
           e.preventDefault();
           const amountInput = document.getElementById('income-amount');
@@ -442,7 +264,6 @@
           updateUI();
         });
 
-        // Add Expense
         document.getElementById('expense-form').addEventListener('submit', (e) => {
           e.preventDefault();
           const categoryEl = document.getElementById('expense-category');
@@ -455,10 +276,10 @@
           const note = noteEl.value.trim();
           if (!category || isNaN(amount) || amount <= 0) return;
 
-          // compute new spent for category
           const spentNow = getSpentByCategory()[category] || 0;
           const limit = budgetData.limits[category];
           const newSpent = spentNow + amount;
+
           warningEl.classList.add('hidden');
           warningEl.textContent = '';
           if (limit !== undefined) {
@@ -471,7 +292,6 @@
             }
           }
 
-          // Add expense to data
           budgetData.expenses.push({
             id: generateId(),
             date: new Date().toISOString().slice(0, 10),
@@ -481,7 +301,6 @@
           });
           saveData();
 
-          // Clear form
           categoryEl.value = '';
           amountEl.value = '';
           noteEl.value = '';
@@ -489,7 +308,6 @@
           updateUI();
         });
 
-        // Set Category Limit
         document.getElementById('limit-form').addEventListener('submit', (e) => {
           e.preventDefault();
           const categoryInput = document.getElementById('limit-category');
@@ -504,7 +322,6 @@
           updateUI();
         });
 
-        // Reset Data Button
         document.getElementById('reset-data').addEventListener('click', () => {
           if (confirm('Are you sure you want to reset all data for this month? This cannot be undone.')) {
             budgetData = createNewBudgetData();
@@ -514,17 +331,10 @@
         });
       }
 
-      /**
-       * Generate a simple unique ID based on timestamp and random number.
-       */
       function generateId() {
         return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 5);
       }
 
-      /**
-       * Compute total spent per category.
-       * @returns {Object} mapping category => amount spent
-       */
       function getSpentByCategory() {
         const spent = {};
         for (const exp of budgetData.expenses) {
@@ -533,38 +343,25 @@
         return spent;
       }
 
-      /**
-       * Compute total expenses.
-       */
       function getTotalExpenses() {
         return budgetData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
       }
 
-      /**
-       * Refresh the UI with current data.
-       */
       function updateUI() {
-        // Update summary numbers
         const totalIncomeEl = document.getElementById('total-income');
-        theTotalExpenses: {
-          const totalExpensesEl = document.getElementById('total-expenses');
-          const remainingEl = document.getElementById('remaining-balance');
-          const totalExpenses = getTotalExpenses();
-          const remaining = budgetData.income - totalExpenses;
-          totalIncomeEl.textContent = formatCurrency(budgetData.income);
-          totalExpensesEl.textContent = formatCurrency(totalExpenses);
-          remainingEl.textContent = formatCurrency(remaining);
-        }
+        const totalExpensesEl = document.getElementById('total-expenses');
+        const remainingEl = document.getElementById('remaining-balance');
+        const totalExpenses = getTotalExpenses();
+        const remaining = budgetData.income - totalExpenses;
+        totalIncomeEl.textContent = formatCurrency(budgetData.income);
+        totalExpensesEl.textContent = formatCurrency(totalExpenses);
+        remainingEl.textContent = formatCurrency(remaining);
 
-        // Update categories table
         const categoriesBody = document.querySelector('#categories-table tbody');
         categoriesBody.innerHTML = '';
         const spentByCat = getSpentByCategory();
-        // Get union of categories from limits and spent
-        const categories = new Set([
-          ...Object.keys(budgetData.limits),
-          ...Object.keys(spentByCat)
-        ]);
+        const categories = new Set([...Object.keys(budgetData.limits), ...Object.keys(spentByCat)]);
+
         if (categories.size === 0) {
           const row = document.createElement('tr');
           const cell = document.createElement('td');
@@ -577,56 +374,30 @@
             const spent = spentByCat[cat] || 0;
             const limit = budgetData.limits[cat];
             const row = document.createElement('tr');
-            if (limit !== undefined && spent > limit) {
-              row.classList.add('over-limit');
-            }
-            // Category name
-            const catCell = document.createElement('td');
-            catCell.textContent = cat;
-            row.appendChild(catCell);
-            // Spent
-            const spentCell = document.createElement('td');
-            spentCell.textContent = formatCurrency(spent);
-            row.appendChild(spentCell);
-            // Limit
-            const limitCell = document.createElement('td');
-            limitCell.textContent = limit !== undefined ? formatCurrency(limit) : '—';
-            row.appendChild(limitCell);
-            // Remaining
-            const remainingCell = document.createElement('td');
-            if (limit !== undefined) {
-              remainingCell.textContent = formatCurrency(limit - spent);
-            } else {
-              remainingCell.textContent = '—';
-            }
-            row.appendChild(remainingCell);
-            // Progress bar
+            if (limit !== undefined && spent > limit) row.classList.add('over-limit');
+
+            const catCell = document.createElement('td'); catCell.textContent = cat; row.appendChild(catCell);
+            const spentCell = document.createElement('td'); spentCell.textContent = formatCurrency(spent); row.appendChild(spentCell);
+            const limitCell = document.createElement('td'); limitCell.textContent = limit !== undefined ? formatCurrency(limit) : '—'; row.appendChild(limitCell);
+            const remainingCell = document.createElement('td'); remainingCell.textContent = (limit !== undefined) ? formatCurrency(limit - spent) : '—'; row.appendChild(remainingCell);
+
             const progressCell = document.createElement('td');
-            const progressWrapper = document.createElement('div');
-            progressWrapper.className = 'progress';
-            const progressBar = document.createElement('div');
-            progressBar.className = 'progress-bar';
+            const progressWrapper = document.createElement('div'); progressWrapper.className = 'progress';
+            const progressBar = document.createElement('div'); progressBar.className = 'progress-bar';
             let percent = 0;
-            if (limit !== undefined && limit > 0) {
-              percent = Math.min((spent / limit) * 100, 100);
-            } else if (spent > 0) {
-              percent = 100;
-            }
+            if (limit !== undefined && limit > 0) percent = Math.min((spent / limit) * 100, 100);
+            else if (spent > 0) percent = 100;
             progressBar.style.width = percent + '%';
-            // Change colour if over limit
-            if (limit !== undefined && spent > limit) {
-              progressBar.style.backgroundColor = '#d9534f'; // red
-            } else if (limit !== undefined && spent > 0.9 * limit) {
-              progressBar.style.backgroundColor = '#f0ad4e'; // orange
-            }
+            if (limit !== undefined && spent > limit) progressBar.style.backgroundColor = '#d9534f';
+            else if (limit !== undefined && spent > 0.9 * limit) progressBar.style.backgroundColor = '#f0ad4e';
             progressWrapper.appendChild(progressBar);
             progressCell.appendChild(progressWrapper);
             row.appendChild(progressCell);
+
             categoriesBody.appendChild(row);
           });
         }
 
-        // Update expenses table
         const expensesBody = document.querySelector('#expenses-table tbody');
         expensesBody.innerHTML = '';
         if (budgetData.expenses.length === 0) {
@@ -637,62 +408,32 @@
           row.appendChild(cell);
           expensesBody.appendChild(row);
         } else {
-          // Sort expenses by date descending
           const sorted = budgetData.expenses.slice().sort((a, b) => b.date.localeCompare(a.date));
           sorted.forEach((exp) => {
             const row = document.createElement('tr');
-            // Date
-            const dateCell = document.createElement('td');
-            dateCell.textContent = exp.date;
-            row.appendChild(dateCell);
-            // Category
-            const catCell = document.createElement('td');
-            catCell.textContent = exp.category;
-            row.appendChild(catCell);
-            // Amount
-            const amtCell = document.createElement('td');
-            amtCell.textContent = formatCurrency(exp.amount);
-            row.appendChild(amtCell);
-            // Note
-            const noteCell = document.createElement('td');
-            noteCell.textContent = exp.note || '—';
-            row.appendChild(noteCell);
-            // Action (delete)
+            const dateCell = document.createElement('td'); dateCell.textContent = exp.date; row.appendChild(dateCell);
+            const catCell = document.createElement('td'); catCell.textContent = exp.category; row.appendChild(catCell);
+            const amtCell = document.createElement('td'); amtCell.textContent = formatCurrency(exp.amount); row.appendChild(amtCell);
+            const noteCell = document.createElement('td'); noteCell.textContent = exp.note || '—'; row.appendChild(noteCell);
             const actionCell = document.createElement('td');
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'Delete';
-            delBtn.className = 'delete-btn';
+            const delBtn = document.createElement('button'); delBtn.textContent = 'Delete'; delBtn.className = 'delete-btn';
             delBtn.addEventListener('click', () => deleteExpense(exp.id));
-            actionCell.appendChild(delBtn);
-            row.appendChild(actionCell);
+            actionCell.appendChild(delBtn); row.appendChild(actionCell);
             expensesBody.appendChild(row);
           });
         }
       }
 
-      /**
-       * Delete an expense by id and update UI.
-       * @param {string} id
-       */
       function deleteExpense(id) {
         budgetData.expenses = budgetData.expenses.filter((exp) => exp.id !== id);
         saveData();
         updateUI();
       }
 
-      /**
-       * Format a number into currency string.
-       * @param {number} amount
-       */
       function formatCurrency(amount) {
-        const options = {
-          style: 'currency',
-          currency: 'USD'
-        };
-        return new Intl.NumberFormat('en-US', options).format(amount);
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
       }
 
-      // Initialize when DOM is loaded
       document.addEventListener('DOMContentLoaded', init);
     })();
   </script>
