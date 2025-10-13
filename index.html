@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budgeting App</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Personal Budget Tracker</h1>
+      <p class="tagline">Keep an eye on your spending, stay within your limits.</p>
+    </header>
+
+    <section id="summary">
+      <h2>Summary</h2>
+      <div class="summary-cards">
+        <div class="card">
+          <h3>Total Income</h3>
+          <p id="total-income">$0.00</p>
+        </div>
+        <div class="card">
+          <h3>Total Expenses</h3>
+          <p id="total-expenses">$0.00</p>
+        </div>
+        <div class="card">
+          <h3>Remaining Balance</h3>
+          <p id="remaining-balance">$0.00</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="add-income">
+      <h2>Add Income</h2>
+      <form id="income-form">
+        <label>
+          Amount ($):
+          <input type="number" step="0.01" min="0" id="income-amount" required />
+        </label>
+        <button type="submit">Add Income</button>
+      </form>
+    </section>
+
+    <section id="add-expense">
+      <h2>Add Expense</h2>
+      <form id="expense-form">
+        <label>
+          Category:
+          <input type="text" id="expense-category" placeholder="e.g., Groceries" required />
+        </label>
+        <label>
+          Amount ($):
+          <input type="number" step="0.01" min="0" id="expense-amount" required />
+        </label>
+        <label>
+          Note:
+          <input type="text" id="expense-note" placeholder="Optional description" />
+        </label>
+        <button type="submit">Add Expense</button>
+        <div id="expense-warning" class="warning hidden"></div>
+      </form>
+    </section>
+
+    <section id="set-limit">
+      <h2>Set Category Limit</h2>
+      <form id="limit-form">
+        <label>
+          Category:
+          <input type="text" id="limit-category" placeholder="e.g., Groceries" required />
+        </label>
+        <label>
+          Monthly Limit ($):
+          <input type="number" step="0.01" min="0" id="limit-amount" required />
+        </label>
+        <button type="submit">Set/Update Limit</button>
+      </form>
+    </section>
+
+    <section id="categories">
+      <h2>Category Overview</h2>
+      <table id="categories-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Spent</th>
+            <th>Limit</th>
+            <th>Remaining</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Categories will be inserted here dynamically -->
+        </tbody>
+      </table>
+    </section>
+
+    <section id="expenses-list">
+      <h2>Expense History</h2>
+      <table id="expenses-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Note</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Expenses will be inserted here dynamically -->
+        </tbody>
+      </table>
+    </section>
+
+    <section id="controls">
+      <h2>Controls</h2>
+      <button id="reset-data">Reset Month Data</button>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
