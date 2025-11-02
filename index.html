@@ -11,8 +11,14 @@
     <header>
       <h1>Personal Budget Tracker</h1>
       <p class="tagline">Keep an eye on your spending, stay within your limits.</p>
+      <div id="user-selector">
+        <label for="user-select">Select User:</label>
+        <select id="user-select">
+          <option value="user1">User 1</option>
+          <option value="user2">User 2</option>
+        </select>
+      </div>
     </header>
-
     <section id="summary">
       <h2>Summary</h2>
       <div class="summary-cards">
@@ -30,7 +36,6 @@
         </div>
       </div>
     </section>
-
     <section id="add-income">
       <h2>Add Income</h2>
       <form id="income-form" novalidate>
@@ -41,7 +46,6 @@
         <button type="submit">Add Income</button>
       </form>
     </section>
-
     <section id="add-expense">
       <h2>Add Expense</h2>
       <form id="expense-form" novalidate>
@@ -61,7 +65,6 @@
         <div id="expense-warning" class="warning hidden" role="status" aria-live="polite"></div>
       </form>
     </section>
-
     <section id="set-limit">
       <h2>Set Category Limit</h2>
       <form id="limit-form" novalidate>
@@ -76,7 +79,6 @@
         <button type="submit">Set/Update Limit</button>
       </form>
     </section>
-
     <section id="categories">
       <h2>Category Overview</h2>
       <table id="categories-table">
@@ -87,6 +89,7 @@
             <th>Limit</th>
             <th>Remaining</th>
             <th>Progress</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -94,7 +97,6 @@
         </tbody>
       </table>
     </section>
-
     <section id="expenses-list">
       <h2>Expense History</h2>
       <table id="expenses-table">
@@ -112,13 +114,11 @@
         </tbody>
       </table>
     </section>
-
     <section id="controls">
       <h2>Controls</h2>
-      <button id="reset-data">Reset Month Data</button>
+      <button id="reset-spending">Reset Spending Data</button>
     </section>
   </div>
-
   <script src="script.js" defer></script>
 </body>
 </html>
