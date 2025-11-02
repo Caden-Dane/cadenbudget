@@ -1,88 +1,101 @@
 /* Simple Reset */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: #f5f6fa;
   color: #333;
   line-height: 1.6;
 }
-
 .container { max-width: 960px; margin: auto; padding: 20px; }
-
 header { text-align: center; margin-bottom: 30px; }
-
 h1 { font-size: 2.2em; margin-bottom: 0.2em; color: #2d2d2d; }
+.tagline { font-size: 1em; color: #666; margin-bottom: 15px; }
 
-.tagline { font-size: 1em; color: #666; }
+/* User Selector */
+#user-selector {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+#user-selector label {
+  font-size: 1em;
+  font-weight: bold;
+  color: #2d2d2d;
+}
+#user-select {
+  padding: 8px 16px;
+  font-size: 1em;
+  border: 2px solid #2d86ff;
+  border-radius: 6px;
+  background-color: white;
+  color: #2d2d2d;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+#user-select:hover {
+  background-color: #f0f7ff;
+}
+#user-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 134, 255, 0.2);
+}
 
 h2 { margin-top: 30px; margin-bottom: 10px; font-size: 1.5em; color: #2d2d2d; }
-
 /* Summary Cards */
 .summary-cards { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-
 .card {
   flex: 1; background-color: #fff; padding: 20px; border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;
 }
-
 .card h3 { margin-bottom: 5px; font-size: 1.1em; color: #555; }
 .card p { font-size: 1.4em; font-weight: bold; color: #2d86ff; }
-
 /* Forms */
 form { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-
 form label {
   flex: 1 1 200px; display: flex; flex-direction: column;
   font-size: 0.9em; color: #444;
 }
-
 form input[type="text"], form input[type="number"] {
   padding: 8px; margin-top: 4px; border: 1px solid #ccc;
   border-radius: 4px; font-size: 1em;
 }
-
 form button {
   padding: 10px 20px; background-color: #2d86ff; color: #fff; border: none;
   border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease-in-out;
   flex: 0 0 auto;
 }
 form button:hover { background-color: #1c5fbf; }
-
 .warning { margin-top: 5px; font-size: 0.9em; color: #d9534f; }
 .hidden { display: none; }
-
 /* Tables */
 table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
 table th, table td { padding: 8px; border: 1px solid #ddd; text-align: left; }
 table th { background-color: #f1f2f6; font-weight: bold; }
 tr.over-limit { background-color: #ffe6e6; }
-
 /* Progress Bars */
 .progress { background-color: #e9ecef; border-radius: 4px; overflow: hidden; height: 14px; }
 .progress-bar { height: 100%; background-color: #2d86ff; transition: width 0.3s ease-in-out; }
-
 /* Controls */
 #controls { margin-top: 20px; }
 #controls button { background-color: #d9534f; }
 #controls button:hover { background-color: #c9302c; }
-
-/* Delete Buttons in Expense Table */
+/* Delete Buttons in Tables */
 .delete-btn {
   padding: 6px 12px; background-color: #dc3545; color: #fff; border: none;
   border-radius: 4px; cursor: pointer; font-size: 0.85em; transition: background-color 0.2s ease-in-out;
 }
 .delete-btn:hover { background-color: #bd2130; }
-
 /* Reset message */
 .reset-message {
   background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9;
   padding: 10px 12px; border-radius: 6px; margin-bottom: 16px;
 }
-
 /* Responsive */
 @media (max-width: 600px) {
   .summary-cards { flex-direction: column; }
   form label { flex: 1 1 100%; }
   form button { width: 100%; }
+  #user-selector { flex-direction: column; }
 }
