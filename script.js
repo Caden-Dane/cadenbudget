@@ -1,76 +1,51 @@
 /*
- * Personal Budget Tracker
- * Stores data in localStorage by month. Forms are handled with JS validation.
+ * Personal Budget Tracker - Multi-User Version
+ * Each user has separate budget data stored in memory
  */
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'budgetData';
-
-  // Data shape:
-  // {
-  //   monthYear: 'YYYY-MM',
-  //   income: Number,
-  //   expenses: Array<{ id, date, category, amount, note }>,
-  //   limits: { [category: string]: Number }
-  // }
-  let budgetData;
+  // Data will be stored in memory during session
+  const userData = {
+    user1: null,
+    user2: null
+  };
+  
+  let currentUser = 'user1';
 
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
-    loadData();
-    checkMonthReset();
+    loadAllUsers();
     setupEventListeners();
     updateUI();
   }
 
-  function loadData() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        budgetData = JSON.parse(raw);
-      } catch {
-        budgetData = createNewBudgetData();
-      }
-    } else {
-      budgetData = createNewBudgetData();
-    }
+  function loadAllUsers() {
+    // Initialize data for both users if not exists
+    if (!userData.user1) userData.user1 = createNewBudgetData();
+    if (!userData.user2) userData.user2 = createNewBudgetData();
   }
 
-  function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(budgetData));
+  function getCurrentData() {
+    return userData[currentUser];
   }
 
   function createNewBudgetData() {
     return {
-      monthYear: getCurrentMonthYear(),
       income: 0,
       expenses: [],
       limits: {}
     };
   }
 
-  function getCurrentMonthYear() {
-    const now = new Date();
-    return now.toISOString().slice(0, 7);
-  }
-
-  function checkMonthReset() {
-    const current = getCurrentMonthYear();
-    if (budgetData.monthYear !== current) {
-      budgetData = createNewBudgetData();
-      saveData();
-      // Show a one-time reset notice
-      const resetMessage = document.createElement('div');
-      resetMessage.className = 'reset-message';
-      resetMessage.textContent = 'New month detected. Budget data has been reset.';
-      document.querySelector('.container').insertBefore(resetMessage, document.querySelector('#summary'));
-      setTimeout(() => resetMessage.remove(), 6000);
-    }
-  }
-
   function setupEventListeners() {
+    // User selector
+    document.getElementById('user-select').addEventListener('change', (e) => {
+      currentUser = e.target.value;
+      updateUI();
+    });
+
     // Income form
     document.getElementById('income-form').addEventListener('submit', (e) => {
       e.preventDefault();
@@ -81,8 +56,7 @@
         amountInput.focus();
         return;
       }
-      budgetData.income += amount;
-      saveData();
+      getCurrentData().income += amount;
       amountInput.value = '';
       updateUI();
     });
@@ -110,6 +84,7 @@
         return;
       }
 
+      const budgetData = getCurrentData();
       const spentNow = getSpentByCategory()[category] || 0;
       const limit = budgetData.limits[category];
       const newSpent = spentNow + amount;
@@ -133,7 +108,6 @@
         amount,
         note
       });
-      saveData();
 
       categoryEl.value = '';
       amountEl.value = '';
@@ -162,18 +136,18 @@
         return;
       }
 
-      budgetData.limits[category] = limit;
-      saveData();
+      getCurrentData().limits[category] = limit;
       categoryInput.value = '';
       amountInput.value = '';
       updateUI();
     });
 
-    // Reset month data
-    document.getElementById('reset-data').addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all data for this month? This cannot be undone.')) {
-        budgetData = createNewBudgetData();
-        saveData();
+    // Reset spending data
+    document.getElementById('reset-spending').addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset all spending data (income and expenses)? Budget limits will be preserved. This cannot be undone.')) {
+        const budgetData = getCurrentData();
+        budgetData.income = 0;
+        budgetData.expenses = [];
         updateUI();
       }
     });
@@ -189,6 +163,7 @@
 
   function getSpentByCategory() {
     const spent = {};
+    const budgetData = getCurrentData();
     for (const exp of budgetData.expenses) {
       spent[exp.category] = (spent[exp.category] || 0) + exp.amount;
     }
@@ -196,10 +171,15 @@
   }
 
   function getTotalExpenses() {
-    return budgetData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    return getCurrentData().expenses.reduce((sum, exp) => sum + exp.amount, 0);
   }
 
   function updateUI() {
+    const budgetData = getCurrentData();
+    
+    // Update user selector
+    document.getElementById('user-select').value = currentUser;
+
     // Summary
     const totalIncomeEl = document.getElementById('total-income');
     const totalExpensesEl = document.getElementById('total-expenses');
@@ -220,7 +200,7 @@
     if (categories.size === 0) {
       const row = document.createElement('tr');
       const cell = document.createElement('td');
-      cell.colSpan = 5;
+      cell.colSpan = 6;
       cell.textContent = 'No categories yet. Add expenses or set limits to begin.';
       row.appendChild(cell);
       categoriesBody.appendChild(row);
@@ -277,6 +257,17 @@
         progressCell.appendChild(progressWrapper);
         row.appendChild(progressCell);
 
+        // Action - Delete limit button
+        const actionCell = document.createElement('td');
+        if (limit !== undefined) {
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete Limit';
+          delBtn.className = 'delete-btn';
+          delBtn.addEventListener('click', () => deleteLimit(cat));
+          actionCell.appendChild(delBtn);
+        }
+        row.appendChild(actionCell);
+
         categoriesBody.appendChild(row);
       });
     }
@@ -326,9 +317,17 @@
   }
 
   function deleteExpense(id) {
+    const budgetData = getCurrentData();
     budgetData.expenses = budgetData.expenses.filter((exp) => exp.id !== id);
-    saveData();
     updateUI();
+  }
+
+  function deleteLimit(category) {
+    if (confirm(`Are you sure you want to delete the budget limit for "${category}"?`)) {
+      const budgetData = getCurrentData();
+      delete budgetData.limits[category];
+      updateUI();
+    }
   }
 
   function formatCurrency(amount) {
