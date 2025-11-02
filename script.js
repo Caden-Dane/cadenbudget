@@ -1,34 +1,47 @@
 /*
  * Personal Budget Tracker - Multi-User Version
- * Each user has separate budget data stored in memory
+ * Each user has separate budget data stored in localStorage
  */
 (function () {
   'use strict';
 
-  // Data will be stored in memory during session
-  const userData = {
-    user1: null,
-    user2: null
-  };
+  const STORAGE_KEY_USER1 = 'budgetData_user1';
+  const STORAGE_KEY_USER2 = 'budgetData_user2';
   
   let currentUser = 'user1';
 
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
-    loadAllUsers();
+    // Load the last selected user from localStorage
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser === 'user1' || savedUser === 'user2') {
+      currentUser = savedUser;
+    }
     setupEventListeners();
     updateUI();
   }
 
-  function loadAllUsers() {
-    // Initialize data for both users if not exists
-    if (!userData.user1) userData.user1 = createNewBudgetData();
-    if (!userData.user2) userData.user2 = createNewBudgetData();
+  function getStorageKey() {
+    return currentUser === 'user1' ? STORAGE_KEY_USER1 : STORAGE_KEY_USER2;
   }
 
   function getCurrentData() {
-    return userData[currentUser];
+    const key = getStorageKey();
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return createNewBudgetData();
+      }
+    }
+    return createNewBudgetData();
+  }
+
+  function saveCurrentData(data) {
+    const key = getStorageKey();
+    localStorage.setItem(key, JSON.stringify(data));
   }
 
   function createNewBudgetData() {
@@ -43,6 +56,7 @@
     // User selector
     document.getElementById('user-select').addEventListener('change', (e) => {
       currentUser = e.target.value;
+      localStorage.setItem('currentUser', currentUser);
       updateUI();
     });
 
@@ -56,7 +70,9 @@
         amountInput.focus();
         return;
       }
-      getCurrentData().income += amount;
+      const budgetData = getCurrentData();
+      budgetData.income += amount;
+      saveCurrentData(budgetData);
       amountInput.value = '';
       updateUI();
     });
@@ -85,7 +101,7 @@
       }
 
       const budgetData = getCurrentData();
-      const spentNow = getSpentByCategory()[category] || 0;
+      const spentNow = getSpentByCategory(budgetData)[category] || 0;
       const limit = budgetData.limits[category];
       const newSpent = spentNow + amount;
 
@@ -108,6 +124,8 @@
         amount,
         note
       });
+
+      saveCurrentData(budgetData);
 
       categoryEl.value = '';
       amountEl.value = '';
@@ -136,7 +154,9 @@
         return;
       }
 
-      getCurrentData().limits[category] = limit;
+      const budgetData = getCurrentData();
+      budgetData.limits[category] = limit;
+      saveCurrentData(budgetData);
       categoryInput.value = '';
       amountInput.value = '';
       updateUI();
@@ -148,6 +168,7 @@
         const budgetData = getCurrentData();
         budgetData.income = 0;
         budgetData.expenses = [];
+        saveCurrentData(budgetData);
         updateUI();
       }
     });
@@ -161,17 +182,16 @@
     return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
   }
 
-  function getSpentByCategory() {
+  function getSpentByCategory(budgetData) {
     const spent = {};
-    const budgetData = getCurrentData();
     for (const exp of budgetData.expenses) {
       spent[exp.category] = (spent[exp.category] || 0) + exp.amount;
     }
     return spent;
   }
 
-  function getTotalExpenses() {
-    return getCurrentData().expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  function getTotalExpenses(budgetData) {
+    return budgetData.expenses.reduce((sum, exp) => sum + exp.amount, 0);
   }
 
   function updateUI() {
@@ -184,7 +204,7 @@
     const totalIncomeEl = document.getElementById('total-income');
     const totalExpensesEl = document.getElementById('total-expenses');
     const remainingEl = document.getElementById('remaining-balance');
-    const totalExpenses = getTotalExpenses();
+    const totalExpenses = getTotalExpenses(budgetData);
     const remaining = budgetData.income - totalExpenses;
 
     totalIncomeEl.textContent = formatCurrency(budgetData.income);
@@ -194,7 +214,7 @@
     // Categories table
     const categoriesBody = document.querySelector('#categories-table tbody');
     categoriesBody.innerHTML = '';
-    const spentByCat = getSpentByCategory();
+    const spentByCat = getSpentByCategory(budgetData);
     const categories = new Set([...Object.keys(budgetData.limits), ...Object.keys(spentByCat)]);
 
     if (categories.size === 0) {
@@ -319,6 +339,7 @@
   function deleteExpense(id) {
     const budgetData = getCurrentData();
     budgetData.expenses = budgetData.expenses.filter((exp) => exp.id !== id);
+    saveCurrentData(budgetData);
     updateUI();
   }
 
@@ -326,6 +347,7 @@
     if (confirm(`Are you sure you want to delete the budget limit for "${category}"?`)) {
       const budgetData = getCurrentData();
       delete budgetData.limits[category];
+      saveCurrentData(budgetData);
       updateUI();
     }
   }
