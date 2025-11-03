@@ -52,4 +52,20 @@ async function handleLogin() {
     status.textContent = 'Login failed.';
     status.style.color = 'red';
   }
+  try {
+  console.log("Attempting sign-in for:", email);
+  await signInWithEmailAndPassword(auth, email, password);
+  console.log("Sign-in successful!");
+  status.textContent = "Success! Loading your budget...";
+  status.style.color = "green";
+  setTimeout(() => {
+    const basePath = window.location.pathname.replace("index.html", "");
+    window.location.href = basePath + "app.html";
+  }, 800);
+} catch (err) {
+  console.error("Firebase login error:", err);
+  status.textContent = "Error: " + err.code + " — " + err.message;
+  status.style.color = "red";
+}
+
 }
