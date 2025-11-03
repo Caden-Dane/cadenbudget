@@ -15,9 +15,7 @@
       height: 100vh;
       margin: 0;
     }
-    h2 {
-      color: #2d2d2d;
-    }
+    h2 { color: #2d2d2d; }
     input {
       padding: 10px;
       font-size: 1.2em;
@@ -38,13 +36,8 @@
       cursor: pointer;
       transition: background 0.2s ease-in-out;
     }
-    button:hover {
-      background-color: #1c5fbf;
-    }
-    p {
-      margin-top: 10px;
-      color: #555;
-    }
+    button:hover { background-color: #1c5fbf; }
+    p { margin-top: 10px; color: #555; }
   </style>
 </head>
 <body>
@@ -72,7 +65,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
     window.firebaseStuff = { auth, signInWithEmailAndPassword, db, doc, getDoc, setDoc };
   </script>
 
