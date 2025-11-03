@@ -7,6 +7,7 @@
 
   const STORAGE_KEY_USER1 = 'budgetData_user1';
   const STORAGE_KEY_USER2 = 'budgetData_user2';
+  const CURRENT_USER_KEY = 'currentUser';
   
   let currentUser = 'user1';
 
@@ -14,12 +15,26 @@
 
   function init() {
     // Load the last selected user from localStorage
-    const savedUser = localStorage.getItem('currentUser');
+    const savedUser = localStorage.getItem(CURRENT_USER_KEY);
     if (savedUser === 'user1' || savedUser === 'user2') {
       currentUser = savedUser;
     }
+    
+    // Initialize both users if they don't exist
+    initializeUserData('user1');
+    initializeUserData('user2');
+    
     setupEventListeners();
     updateUI();
+  }
+
+  function initializeUserData(user) {
+    const key = user === 'user1' ? STORAGE_KEY_USER1 : STORAGE_KEY_USER2;
+    const existing = localStorage.getItem(key);
+    if (!existing) {
+      const newData = createNewBudgetData();
+      localStorage.setItem(key, JSON.stringify(newData));
+    }
   }
 
   function getStorageKey() {
@@ -31,17 +46,33 @@
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
-        return JSON.parse(raw);
-      } catch {
-        return createNewBudgetData();
+        const parsed = JSON.parse(raw);
+        // Ensure all required properties exist
+        if (!parsed.income && parsed.income !== 0) parsed.income = 0;
+        if (!parsed.expenses) parsed.expenses = [];
+        if (!parsed.limits) parsed.limits = {};
+        return parsed;
+      } catch (e) {
+        console.error('Error parsing data:', e);
+        const newData = createNewBudgetData();
+        saveCurrentData(newData);
+        return newData;
       }
     }
-    return createNewBudgetData();
+    const newData = createNewBudgetData();
+    saveCurrentData(newData);
+    return newData;
   }
 
   function saveCurrentData(data) {
     const key = getStorageKey();
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+      console.log('Data saved for', currentUser, ':', data);
+    } catch (e) {
+      console.error('Error saving data:', e);
+      alert('Failed to save data. Please try again.');
+    }
   }
 
   function createNewBudgetData() {
@@ -56,7 +87,7 @@
     // User selector
     document.getElementById('user-select').addEventListener('change', (e) => {
       currentUser = e.target.value;
-      localStorage.setItem('currentUser', currentUser);
+      localStorage.setItem(CURRENT_USER_KEY, currentUser);
       updateUI();
     });
 
