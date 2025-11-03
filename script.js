@@ -172,6 +172,16 @@
         updateUI();
       }
     });
+
+    // Reset budget progress (expenses only)
+    document.getElementById('reset-expenses').addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset budget progress? This will clear all expenses but keep your income and budget limits. Perfect for starting a new month!')) {
+        const budgetData = getCurrentData();
+        budgetData.expenses = [];
+        saveCurrentData(budgetData);
+        updateUI();
+      }
+    });
   }
 
   function isInvalidAmount(n) {
