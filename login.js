@@ -59,7 +59,7 @@ async function handleLogin() {
     status.textContent = 'Success! Loading your budget...';
     status.style.color = 'green';
     setTimeout(() => {
-      window.location.href = 'app.html';
+      window.location.href = '/cadenbudget/app.html';
     }, 800);
   } catch (err) {
     console.error('Login failed:', err);
