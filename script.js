@@ -10,16 +10,18 @@
   const CURRENT_USER_KEY = 'currentUser';
   const VALID_USERS = new Set(['user1', 'user2']);
 
+  // Coerce any unrecognised user back to 'user1'
   function sanitizeUser(u) {
     return VALID_USERS.has(u) ? u : 'user1';
   }
 
+  // The currently-selected user (defaults to user1)
   let currentUser = 'user1';
 
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
-    // Test localStorage
+    // Test localStorage availability
     try {
       const test = '__test__';
       localStorage.setItem(test, test);
@@ -29,170 +31,188 @@
     }
 
     // Load saved user preference (sanitized)
-    const savedUser = sanitizeUser(localStorage.getItem(CURRENT_USER_KEY));
-    currentUser = savedUser;
+    currentUser = sanitizeUser(localStorage.getItem(CURRENT_USER_KEY));
 
     setupEventListeners();
     updateUI();
   }
 
+  // Return the appropriate storage key for the current user
   function getStorageKey() {
-    // Safely resolve storage key based on sanitized user
     return KEYS[sanitizeUser(currentUser)];
   }
 
+  // Read the current user's data from localStorage
   function getCurrentData() {
     const key = getStorageKey();
     const raw = localStorage.getItem(key);
     if (raw) {
       try {
-        const data = JSON.parse(raw);
-        return data;
+        return JSON.parse(raw);
       } catch (e) {
         console.error('Error parsing data:', e);
       }
     }
+    // Default structure if none stored
     return { income: 0, expenses: [], limits: {} };
   }
 
+  // Save the current user's data back to localStorage
   function saveCurrentData(data) {
-    const key = getStorageKey();
-    localStorage.setItem(key, JSON.stringify(data));
+    localStorage.setItem(getStorageKey(), JSON.stringify(data));
   }
 
   function setupEventListeners() {
-    // User selector
-    document.getElementById('user-select').addEventListener('change', (e) => {
-      currentUser = sanitizeUser(e.target.value);
-      localStorage.setItem(CURRENT_USER_KEY, currentUser);
-      updateUI();
-    });
+    // User selector: sanitise the value before saving
+    const userSelect = document.getElementById('user-select');
+    if (userSelect) {
+      userSelect.addEventListener('change', (e) => {
+        currentUser = sanitizeUser(e.target.value);
+        localStorage.setItem(CURRENT_USER_KEY, currentUser);
+        updateUI();
+      });
+    }
 
     // Income form
-    document.getElementById('income-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const amountInput = document.getElementById('income-amount');
-      const amount = parseFloat(amountInput.value);
-
-      if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid income amount greater than 0.');
-        return;
-      }
-
-      const data = getCurrentData();
-      data.income += amount;
-      saveCurrentData(data);
-      amountInput.value = '';
-      updateUI();
-    });
+    const incomeForm = document.getElementById('income-form');
+    if (incomeForm) {
+      incomeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amountInput = document.getElementById('income-amount');
+        const amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+          alert('Please enter a valid income amount greater than 0.');
+          return;
+        }
+        const data = getCurrentData();
+        data.income += amount;
+        saveCurrentData(data);
+        amountInput.value = '';
+        updateUI();
+      });
+    }
 
     // Expense form
-    document.getElementById('expense-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const categoryEl = document.getElementById('expense-category');
-      const amountEl = document.getElementById('expense-amount');
-      const noteEl = document.getElementById('expense-note');
-      const warningEl = document.getElementById('expense-warning');
+    const expenseForm = document.getElementById('expense-form');
+    if (expenseForm) {
+      expenseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const categoryEl = document.getElementById('expense-category');
+        const amountEl = document.getElementById('expense-amount');
+        const noteEl = document.getElementById('expense-note');
+        const warningEl = document.getElementById('expense-warning');
 
-      const category = categoryEl.value.trim();
-      const amount = parseFloat(amountEl.value);
-      const note = noteEl.value.trim();
+        const category = categoryEl.value.trim();
+        const amount = parseFloat(amountEl.value);
+        const note = noteEl.value.trim();
 
-      if (!category) {
-        alert('Please enter an expense category.');
-        return;
-      }
-      if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid expense amount greater than 0.');
-        return;
-      }
-
-      const data = getCurrentData();
-      const spent = getSpentByCategory(data);
-      const spentNow = spent[category] || 0;
-      const limit = data.limits[category];
-      const newSpent = spentNow + amount;
-
-      warningEl.classList.add('hidden');
-      warningEl.textContent = '';
-
-      if (limit !== undefined) {
-        if (newSpent > limit) {
-          warningEl.textContent = `Warning: This expense will exceed your limit for ${category}.`;
-          warningEl.classList.remove('hidden');
-        } else if (newSpent > 0.9 * limit) {
-          warningEl.textContent = `Caution: You are close to reaching your limit for ${category}.`;
-          warningEl.classList.remove('hidden');
+        if (!category) {
+          alert('Please enter an expense category.');
+          return;
         }
-      }
+        if (isNaN(amount) || amount <= 0) {
+          alert('Please enter a valid expense amount greater than 0.');
+          return;
+        }
 
-      data.expenses.push({
-        id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-        date: new Date().toISOString().slice(0, 10),
-        category: category,
-        amount: amount,
-        note: note
+        const data = getCurrentData();
+        const spent = getSpentByCategory(data);
+        const spentNow = spent[category] || 0;
+        const limit = data.limits[category];
+        const newSpent = spentNow + amount;
+
+        // Reset warning
+        warningEl.classList.add('hidden');
+        warningEl.textContent = '';
+
+        // Limit warnings
+        if (limit !== undefined) {
+          if (newSpent > limit) {
+            warningEl.textContent = `Warning: This expense will exceed your limit for ${category}.`;
+            warningEl.classList.remove('hidden');
+          } else if (newSpent > 0.9 * limit) {
+            warningEl.textContent = `Caution: You are close to reaching your limit for ${category}.`;
+            warningEl.classList.remove('hidden');
+          }
+        }
+
+        data.expenses.push({
+          id: 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+          date: new Date().toISOString().slice(0, 10),
+          category: category,
+          amount: amount,
+          note: note
+        });
+
+        saveCurrentData(data);
+        categoryEl.value = '';
+        amountEl.value = '';
+        noteEl.value = '';
+        updateUI();
       });
-
-      saveCurrentData(data);
-      categoryEl.value = '';
-      amountEl.value = '';
-      noteEl.value = '';
-      updateUI();
-    });
+    }
 
     // Limit form
-    document.getElementById('limit-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const categoryInput = document.getElementById('limit-category');
-      const amountInput = document.getElementById('limit-amount');
+    const limitForm = document.getElementById('limit-form');
+    if (limitForm) {
+      limitForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const categoryInput = document.getElementById('limit-category');
+        const amountInput = document.getElementById('limit-amount');
 
-      const category = categoryInput.value.trim();
-      const limit = parseFloat(amountInput.value);
+        const category = categoryInput.value.trim();
+        const limit = parseFloat(amountInput.value);
 
-      if (!category) {
-        alert('Please enter a category for the limit.');
-        return;
-      }
-      if (isNaN(limit) || limit < 0) {
-        alert('Please enter a valid limit (0 or greater).');
-        return;
-      }
+        if (!category) {
+          alert('Please enter a category for the limit.');
+          return;
+        }
+        if (isNaN(limit) || limit < 0) {
+          alert('Please enter a valid limit (0 or greater).');
+          return;
+        }
 
-      const data = getCurrentData();
-      data.limits[category] = limit;
-      saveCurrentData(data);
-      categoryInput.value = '';
-      amountInput.value = '';
-      updateUI();
-    });
+        const data = getCurrentData();
+        data.limits[category] = limit;
+        saveCurrentData(data);
+        categoryInput.value = '';
+        amountInput.value = '';
+        updateUI();
+      });
+    }
 
     // Reset spending data
-    document.getElementById('reset-spending').addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all spending data (income and expenses)? Budget limits will be preserved. This cannot be undone.')) {
-        const data = getCurrentData();
-        data.income = 0;
-        data.expenses = [];
-        saveCurrentData(data);
-        updateUI();
-      }
-    });
+    const resetSpendingBtn = document.getElementById('reset-spending');
+    if (resetSpendingBtn) {
+      resetSpendingBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset all spending data (income and expenses)? Budget limits will be preserved. This cannot be undone.')) {
+          const data = getCurrentData();
+          data.income = 0;
+          data.expenses = [];
+          saveCurrentData(data);
+          updateUI();
+        }
+      });
+    }
 
-    // Reset budget progress
-    document.getElementById('reset-expenses').addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset budget progress? This will clear all expenses but keep your income and budget limits. Perfect for starting a new month!')) {
-        const data = getCurrentData();
-        data.expenses = [];
-        saveCurrentData(data);
-        updateUI();
-      }
-    });
+    // Reset budget progress (expenses only)
+    const resetExpensesBtn = document.getElementById('reset-expenses');
+    if (resetExpensesBtn) {
+      resetExpensesBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset budget progress? This will clear all expenses but keep your income and budget limits. Perfect for starting a new month!')) {
+          const data = getCurrentData();
+          data.expenses = [];
+          saveCurrentData(data);
+          updateUI();
+        }
+      });
+    }
   }
 
+  // Summarize expenses by category
   function getSpentByCategory(data) {
     const spent = {};
-    for (let i = 0; i < data.expenses.length; i++) {
-      const exp = data.expenses[i];
+    for (const exp of data.expenses) {
       if (!spent[exp.category]) {
         spent[exp.category] = 0;
       }
@@ -201,18 +221,16 @@
     return spent;
   }
 
+  // Total of all expenses
   function getTotalExpenses(data) {
-    let total = 0;
-    for (let i = 0; i < data.expenses.length; i++) {
-      total += data.expenses[i].amount;
-    }
-    return total;
+    return data.expenses.reduce((sum, exp) => sum + exp.amount, 0);
   }
 
+  // Rebuild the UI for the current user
   function updateUI() {
     const data = getCurrentData();
 
-    // Reflect the current user selection in the UI
+    // Update the select to match the sanitized user
     const userSelect = document.getElementById('user-select');
     if (userSelect) {
       userSelect.value = sanitizeUser(currentUser);
@@ -229,6 +247,7 @@
     updateExpensesTable(data);
   }
 
+  // Build the category overview table
   function updateCategoriesTable(data) {
     const tbody = document.querySelector('#categories-table tbody');
     tbody.innerHTML = '';
@@ -317,6 +336,7 @@
     });
   }
 
+  // Build the expenses history table
   function updateExpensesTable(data) {
     const tbody = document.querySelector('#expenses-table tbody');
     tbody.innerHTML = '';
@@ -331,12 +351,10 @@
       return;
     }
 
-    const sorted = data.expenses.slice().sort((a, b) => {
-      return b.date.localeCompare(a.date);
-    });
+    // Sort newest to oldest
+    const sorted = data.expenses.slice().sort((a, b) => b.date.localeCompare(a.date));
 
-    for (let i = 0; i < sorted.length; i++) {
-      const exp = sorted[i];
+    for (const exp of sorted) {
       const row = document.createElement('tr');
 
       const dateCell = document.createElement('td');
@@ -369,6 +387,7 @@
     }
   }
 
+  // Remove a single expense
   function deleteExpense(id) {
     const data = getCurrentData();
     data.expenses = data.expenses.filter((exp) => exp.id !== id);
@@ -376,6 +395,7 @@
     updateUI();
   }
 
+  // Delete a category limit
   function deleteLimit(category) {
     if (confirm('Are you sure you want to delete the budget limit for "' + category + '"?')) {
       const data = getCurrentData();
@@ -385,6 +405,7 @@
     }
   }
 
+  // Format numbers as currency
   function formatCurrency(amount) {
     const num = Number(amount) || 0;
     return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
