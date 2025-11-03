@@ -5,7 +5,7 @@
 
 const { auth, signInWithEmailAndPassword } = window.firebaseStuff;
 
-// Define user credentials
+// Define user credentials (must match Firebase Authentication users)
 const USERS = {
   caden: {
     email: "cadendane@gmail.com",
@@ -18,15 +18,25 @@ const USERS = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('login-btn').addEventListener('click', handleLogin);
-  document.getElementById('name-input').addEventListener('keypress', (e) => {
+  console.log('login.js loaded, wiring up events');
+  const btn = document.getElementById('login-btn');
+  const input = document.getElementById('name-input');
+
+  if (!btn || !input) {
+    console.error('Login elements not found in DOM.');
+    return;
+  }
+
+  btn.addEventListener('click', handleLogin);
+  input.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleLogin();
   });
 });
 
 async function handleLogin() {
-  const nameInput = document.getElementById('name-input').value.trim().toLowerCase();
+  const inputEl = document.getElementById('name-input');
   const status = document.getElementById('login-status');
+  const nameInput = inputEl.value.trim().toLowerCase();
 
   if (!USERS[nameInput]) {
     status.textContent = 'Unknown user. Type "caden" or "ciara".';
@@ -35,37 +45,24 @@ async function handleLogin() {
   }
 
   const { email, password } = USERS[nameInput];
+
   status.textContent = 'Signing in...';
   status.style.color = '#333';
 
   try {
+    console.log('Attempting sign-in for:', email);
     await signInWithEmailAndPassword(auth, email, password);
+    console.log('Sign-in successful!');
     status.textContent = 'Success! Loading your budget...';
     status.style.color = 'green';
+
     setTimeout(() => {
-      // Works for GitHub Pages regardless of subfolder name
       const basePath = window.location.pathname.replace('index.html', '');
       window.location.href = basePath + 'app.html';
     }, 800);
   } catch (err) {
-    console.error('Login failed:', err);
-    status.textContent = 'Login failed.';
+    console.error('Firebase login error:', err);
+    status.textContent = 'Error: ' + err.code + ' — ' + err.message;
     status.style.color = 'red';
   }
-  try {
-  console.log("Attempting sign-in for:", email);
-  await signInWithEmailAndPassword(auth, email, password);
-  console.log("Sign-in successful!");
-  status.textContent = "Success! Loading your budget...";
-  status.style.color = "green";
-  setTimeout(() => {
-    const basePath = window.location.pathname.replace("index.html", "");
-    window.location.href = basePath + "app.html";
-  }, 800);
-} catch (err) {
-  console.error("Firebase login error:", err);
-  status.textContent = "Error: " + err.code + " — " + err.message;
-  status.style.color = "red";
-}
-
 }
