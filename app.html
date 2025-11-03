@@ -19,6 +19,7 @@
         </select>
       </div>
     </header>
+
     <section id="summary">
       <h2>Summary</h2>
       <div class="summary-cards">
@@ -36,6 +37,7 @@
         </div>
       </div>
     </section>
+
     <section id="add-income">
       <h2>Add Income</h2>
       <form id="income-form" novalidate>
@@ -46,6 +48,7 @@
         <button type="submit">Add Income</button>
       </form>
     </section>
+
     <section id="add-expense">
       <h2>Add Expense</h2>
       <form id="expense-form" novalidate>
@@ -65,6 +68,7 @@
         <div id="expense-warning" class="warning hidden" role="status" aria-live="polite"></div>
       </form>
     </section>
+
     <section id="set-limit">
       <h2>Set Category Limit</h2>
       <form id="limit-form" novalidate>
@@ -79,6 +83,7 @@
         <button type="submit">Set/Update Limit</button>
       </form>
     </section>
+
     <section id="categories">
       <h2>Category Overview</h2>
       <table id="categories-table">
@@ -92,11 +97,10 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- Categories will be inserted here dynamically -->
-        </tbody>
+        <tbody></tbody>
       </table>
     </section>
+
     <section id="expenses-list">
       <h2>Expense History</h2>
       <table id="expenses-table">
@@ -109,42 +113,40 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody>
-          <!-- Expenses will be inserted here dynamically -->
-        </tbody>
+        <tbody></tbody>
       </table>
     </section>
+
     <section id="controls">
       <h2>Controls</h2>
       <button id="reset-spending">Reset Spending Data</button>
       <button id="reset-expenses">Reset Budget Progress</button>
     </section>
   </div>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBdpkPurt1_x76tvfTTuwhU0OXQRWwiO-4",
-    authDomain: "budget-ef2bf.firebaseapp.com",
-    projectId: "budget-ef2bf",
-    storageBucket: "budget-ef2bf.firebasestorage.app",
-    messagingSenderId: "1016930929149",
-    appId: "1:1016930929149:web:d94b1231a56c72d9dbf194",
-    measurementId: "G-JLHB0XMHYM"
-  };
+  <!-- Firebase SDK + global setup for script.js -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-const auth = getAuth(app);
-await setPersistence(auth, browserLocalPersistence);
+    const firebaseConfig = {
+      apiKey: "AIzaSyBdpkPurt1_x76tvfTTuwhU0OXQRWwiO-4",
+      authDomain: "budget-ef2bf.firebaseapp.com",
+      projectId: "budget-ef2bf",
+      storageBucket: "budget-ef2bf.firebasestorage.app",
+      messagingSenderId: "1016930929149",
+      appId: "1:1016930929149:web:d94b1231a56c72d9dbf194",
+      measurementId: "G-JLHB0XMHYM"
+    };
 
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
+    window.firebaseStuff = { auth, db, doc, getDoc, setDoc };
+  </script>
 
-  window.firebaseStuff = { auth, signInWithEmailAndPassword, db, doc, getDoc, setDoc };
-</script>
   <script src="script.js" defer></script>
 </body>
 </html>
