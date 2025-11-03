@@ -1,4 +1,4 @@
-get<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -46,10 +46,15 @@ get<!DOCTYPE html>
   <button id="login-btn">Enter</button>
   <p id="login-status"></p>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK + global setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+    import {
+      getAuth,
+      setPersistence,
+      browserLocalPersistence,
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -63,10 +68,13 @@ get<!DOCTYPE html>
     };
 
     const app = initializeApp(firebaseConfig);
-import { getAuth, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-const auth = getAuth(app);
-await setPersistence(auth, browserLocalPersistence);
+    const auth = getAuth(app);
     const db = getFirestore(app);
+
+    // Persist login on each device
+    setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+    // Make Firebase available to login.js
     window.firebaseStuff = { auth, signInWithEmailAndPassword, db, doc, getDoc, setDoc };
   </script>
 
