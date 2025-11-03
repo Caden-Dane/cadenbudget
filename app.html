@@ -137,7 +137,9 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  await setPersistence(auth, browserLocalPersistence);
   const db = getFirestore(app);
+
 
   window.firebaseStuff = { auth, signInWithEmailAndPassword, db, doc, getDoc, setDoc };
 </script>
