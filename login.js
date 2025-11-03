@@ -18,22 +18,6 @@ const USERS = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  const container = document.createElement('div');
-  container.style.display = 'flex';
-  container.style.flexDirection = 'column';
-  container.style.alignItems = 'center';
-  container.style.marginTop = '20vh';
-
-  container.innerHTML = `
-    <h2>Budget Tracker Login</h2>
-    <input id="name-input" type="text" placeholder="Type 'caden' or 'ciara'" style="padding:10px;font-size:1.2em;">
-    <button id="login-btn" style="margin-top:10px;padding:8px 20px;font-size:1em;">Enter</button>
-    <p id="login-status" style="margin-top:10px;color:#555;"></p>
-  `;
-
-  document.body.innerHTML = '';
-  document.body.appendChild(container);
-
   document.getElementById('login-btn').addEventListener('click', handleLogin);
   document.getElementById('name-input').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleLogin();
@@ -59,7 +43,9 @@ async function handleLogin() {
     status.textContent = 'Success! Loading your budget...';
     status.style.color = 'green';
     setTimeout(() => {
-      window.location.href = '/cadenbudget/app.html';
+      // Works for GitHub Pages regardless of subfolder name
+      const basePath = window.location.pathname.replace('index.html', '');
+      window.location.href = basePath + 'app.html';
     }, 800);
   } catch (err) {
     console.error('Login failed:', err);
