@@ -78,9 +78,11 @@ tr.over-limit { background-color: #ffe6e6; }
 .progress { background-color: #e9ecef; border-radius: 4px; overflow: hidden; height: 14px; }
 .progress-bar { height: 100%; background-color: #2d86ff; transition: width 0.3s ease-in-out; }
 /* Controls */
-#controls { margin-top: 20px; }
-#controls button { background-color: #d9534f; }
+#controls { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+#controls button { background-color: #d9534f; padding: 10px 20px; }
 #controls button:hover { background-color: #c9302c; }
+#reset-expenses { background-color: #f0ad4e; }
+#reset-expenses:hover { background-color: #ec971f; }
 /* Delete Buttons in Tables */
 .delete-btn {
   padding: 6px 12px; background-color: #dc3545; color: #fff; border: none;
