@@ -1,16 +1,15 @@
 /*
- * Personal Budget Tracker - Firebase Cloud Version
- * Each user (anonymous or logged in) has separate budget data stored in Firestore.
+ * Personal Budget Tracker - Firestore Authenticated Version
+ * Each signed-in user has separate budget data stored in Firestore.
  */
 
 'use strict';
 
-// Wait for Firebase objects from index.html
-const { auth, signInAnonymously, db, doc, getDoc, setDoc } = window.firebaseStuff;
+const { auth, db, doc, getDoc, setDoc } = window.firebaseStuff;
 
-// Global variables
-let firebaseUserId = null;
-let inMemoryData = { income: 0, expenses: [], limits: {} };
+// ---------------------- GLOBAL DATA ----------------------
+let userUid = null;
+let data = { income: 0, expenses: [], limits: {} };
 
 // ---------------------- INIT ----------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -18,56 +17,54 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function init() {
-  // Sign in anonymously to get a unique user ID
-  await ensureSignedIn();
+  // Wait for user authentication
+  await waitForUser();
 
-  // Load any existing budget data from Firestore
+  // Load their Firestore budget
   await loadDataFromServer();
 
-  // Hook up UI listeners
+  // Attach event listeners
   setupEventListeners();
 
-  // Draw initial data
+  // Render UI
   updateUI();
 }
 
 // ---------------------- AUTH ----------------------
-async function ensureSignedIn() {
-  if (!auth.currentUser) {
-    await signInAnonymously(auth);
-  }
-  firebaseUserId = auth.currentUser.uid;
-  console.log('Signed in as user:', firebaseUserId);
+async function waitForUser() {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+      userUid = user.uid;
+      console.log('Logged in as:', user.email, userUid);
+      unsubscribe();
+      resolve();
+    }, reject);
+  });
 }
 
 // ---------------------- FIRESTORE I/O ----------------------
 async function loadDataFromServer() {
-  const ref = doc(db, 'budgets', firebaseUserId);
+  const ref = doc(db, 'budgets', userUid);
   const snap = await getDoc(ref);
-
   if (snap.exists()) {
-    inMemoryData = snap.data();
-    console.log('Loaded data from Firestore:', inMemoryData);
+    data = snap.data();
+    console.log('Loaded from Firestore:', data);
   } else {
-    inMemoryData = { income: 0, expenses: [], limits: {} };
-    console.log('No existing budget, starting fresh.');
+    data = { income: 0, expenses: [], limits: {} };
+    await setDoc(ref, data);
+    console.log('Initialized new Firestore document.');
   }
 }
 
 async function saveDataToServer() {
-  const ref = doc(db, 'budgets', firebaseUserId);
-  await setDoc(ref, inMemoryData);
-  console.log('Saved data to Firestore.');
-}
-
-// ---------------------- HELPER FUNCTIONS ----------------------
-function getCurrentData() {
-  return inMemoryData;
-}
-
-async function saveCurrentData(data) {
-  inMemoryData = data;
-  await saveDataToServer();
+  if (!userUid) return;
+  const ref = doc(db, 'budgets', userUid);
+  await setDoc(ref, data);
+  console.log('Saved to Firestore.');
 }
 
 // ---------------------- EVENT LISTENERS ----------------------
@@ -77,15 +74,10 @@ function setupEventListeners() {
     e.preventDefault();
     const amountInput = document.getElementById('income-amount');
     const amount = parseFloat(amountInput.value);
+    if (isNaN(amount) || amount <= 0) return alert('Please enter a valid income amount.');
 
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid income amount greater than 0.');
-      return;
-    }
-
-    const data = getCurrentData();
     data.income += amount;
-    await saveCurrentData(data);
+    await saveDataToServer();
     amountInput.value = '';
     updateUI();
   });
@@ -102,16 +94,9 @@ function setupEventListeners() {
     const amount = parseFloat(amountEl.value);
     const note = noteEl.value.trim();
 
-    if (!category) {
-      alert('Please enter an expense category.');
-      return;
-    }
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid expense amount greater than 0.');
-      return;
-    }
+    if (!category) return alert('Please enter a category.');
+    if (isNaN(amount) || amount <= 0) return alert('Please enter a valid amount.');
 
-    const data = getCurrentData();
     const spent = getSpentByCategory(data);
     const spentNow = spent[category] || 0;
     const limit = data.limits[category];
@@ -119,13 +104,12 @@ function setupEventListeners() {
 
     warningEl.classList.add('hidden');
     warningEl.textContent = '';
-
     if (limit !== undefined) {
       if (newSpent > limit) {
         warningEl.textContent = `Warning: This expense will exceed your limit for ${category}.`;
         warningEl.classList.remove('hidden');
       } else if (newSpent > 0.9 * limit) {
-        warningEl.textContent = `Caution: You are close to reaching your limit for ${category}.`;
+        warningEl.textContent = `Caution: You are close to your limit for ${category}.`;
         warningEl.classList.remove('hidden');
       }
     }
@@ -135,10 +119,10 @@ function setupEventListeners() {
       date: new Date().toISOString().slice(0, 10),
       category,
       amount,
-      note,
+      note
     });
 
-    await saveCurrentData(data);
+    await saveDataToServer();
     categoryEl.value = '';
     amountEl.value = '';
     noteEl.value = '';
@@ -150,65 +134,51 @@ function setupEventListeners() {
     e.preventDefault();
     const categoryInput = document.getElementById('limit-category');
     const amountInput = document.getElementById('limit-amount');
-
     const category = categoryInput.value.trim();
     const limit = parseFloat(amountInput.value);
 
-    if (!category) {
-      alert('Please enter a category for the limit.');
-      return;
-    }
-    if (isNaN(limit) || limit < 0) {
-      alert('Please enter a valid limit (0 or greater).');
-      return;
-    }
+    if (!category) return alert('Please enter a category.');
+    if (isNaN(limit) || limit < 0) return alert('Please enter a valid limit.');
 
-    const data = getCurrentData();
     data.limits[category] = limit;
-    await saveCurrentData(data);
+    await saveDataToServer();
     categoryInput.value = '';
     amountInput.value = '';
     updateUI();
   });
 
-  // Reset all data
+  // Reset income + expenses
   document.getElementById('reset-spending').addEventListener('click', async () => {
-    if (confirm('Reset ALL spending data (income + expenses)? Limits stay.')) {
-      const data = getCurrentData();
-      data.income = 0;
-      data.expenses = [];
-      await saveCurrentData(data);
-      updateUI();
-    }
+    if (!confirm('Reset ALL spending data (income + expenses)? Limits stay.')) return;
+    data.income = 0;
+    data.expenses = [];
+    await saveDataToServer();
+    updateUI();
   });
 
   // Reset only expenses
   document.getElementById('reset-expenses').addEventListener('click', async () => {
-    if (confirm('Reset expense list (keep income + limits)?')) {
-      const data = getCurrentData();
-      data.expenses = [];
-      await saveCurrentData(data);
-      updateUI();
-    }
+    if (!confirm('Reset expenses only (keep income + limits)?')) return;
+    data.expenses = [];
+    await saveDataToServer();
+    updateUI();
   });
 }
 
-// ---------------------- UI UPDATES ----------------------
-function getSpentByCategory(data) {
+// ---------------------- UI ----------------------
+function getSpentByCategory(d) {
   const spent = {};
-  for (const exp of data.expenses) {
+  for (const exp of d.expenses) {
     spent[exp.category] = (spent[exp.category] || 0) + exp.amount;
   }
   return spent;
 }
 
-function getTotalExpenses(data) {
-  return data.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+function getTotalExpenses(d) {
+  return d.expenses.reduce((sum, exp) => sum + exp.amount, 0);
 }
 
 function updateUI() {
-  const data = getCurrentData();
-
   const totalExpenses = getTotalExpenses(data);
   const remaining = data.income - totalExpenses;
 
@@ -216,114 +186,76 @@ function updateUI() {
   document.getElementById('total-expenses').textContent = formatCurrency(totalExpenses);
   document.getElementById('remaining-balance').textContent = formatCurrency(remaining);
 
-  updateCategoriesTable(data);
-  updateExpensesTable(data);
+  updateCategoriesTable();
+  updateExpensesTable();
 }
 
-function updateCategoriesTable(data) {
+function updateCategoriesTable() {
   const tbody = document.querySelector('#categories-table tbody');
   tbody.innerHTML = '';
-
   const spent = getSpentByCategory(data);
-  const allCategories = new Set([...Object.keys(data.limits), ...Object.keys(spent)]);
+  const allCats = new Set([...Object.keys(data.limits), ...Object.keys(spent)]);
 
-  if (allCategories.size === 0) {
+  if (allCats.size === 0) {
     const row = document.createElement('tr');
-    const cell = document.createElement('td');
-    cell.colSpan = 6;
-    cell.textContent = 'No categories yet. Add expenses or set limits to begin.';
-    row.appendChild(cell);
+    row.innerHTML = '<td colspan="6">No categories yet. Add expenses or set limits to begin.</td>';
     tbody.appendChild(row);
     return;
   }
 
-  for (const cat of allCategories) {
-    const spentAmount = spent[cat] || 0;
-    const limitAmount = data.limits[cat];
-
+  for (const cat of allCats) {
+    const spentAmt = spent[cat] || 0;
+    const limitAmt = data.limits[cat];
     const row = document.createElement('tr');
-    if (limitAmount !== undefined && spentAmount > limitAmount) row.classList.add('over-limit');
+    if (limitAmt !== undefined && spentAmt > limitAmt) row.classList.add('over-limit');
 
-    // Category
-    const catCell = document.createElement('td');
-    catCell.textContent = cat;
-    row.appendChild(catCell);
+    const percent = limitAmt ? Math.min((spentAmt / limitAmt) * 100, 100) : 0;
+    const barColor =
+      limitAmt && spentAmt > limitAmt
+        ? '#d9534f'
+        : limitAmt && spentAmt > 0.9 * limitAmt
+        ? '#f0ad4e'
+        : '#2d86ff';
 
-    // Spent
-    const spentCell = document.createElement('td');
-    spentCell.textContent = formatCurrency(spentAmount);
-    row.appendChild(spentCell);
+    row.innerHTML = `
+      <td>${cat}</td>
+      <td>${formatCurrency(spentAmt)}</td>
+      <td>${limitAmt !== undefined ? formatCurrency(limitAmt) : '—'}</td>
+      <td>${limitAmt !== undefined ? formatCurrency(limitAmt - spentAmt) : '—'}</td>
+      <td>
+        <div class="progress">
+          <div class="progress-bar" style="width:${percent}%; background:${barColor};"></div>
+        </div>
+      </td>
+      <td>${limitAmt !== undefined ? '<button class="delete-btn">Delete Limit</button>' : ''}</td>
+    `;
 
-    // Limit
-    const limitCell = document.createElement('td');
-    limitCell.textContent = limitAmount !== undefined ? formatCurrency(limitAmount) : '—';
-    row.appendChild(limitCell);
-
-    // Remaining
-    const remainingCell = document.createElement('td');
-    remainingCell.textContent = limitAmount !== undefined
-      ? formatCurrency(limitAmount - spentAmount)
-      : '—';
-    row.appendChild(remainingCell);
-
-    // Progress bar
-    const progressCell = document.createElement('td');
-    const progressDiv = document.createElement('div');
-    progressDiv.className = 'progress';
-    const progressBar = document.createElement('div');
-    progressBar.className = 'progress-bar';
-    let percent = 0;
-    if (limitAmount !== undefined && limitAmount > 0)
-      percent = Math.min((spentAmount / limitAmount) * 100, 100);
-    else if (spentAmount > 0)
-      percent = 100;
-
-    progressBar.style.width = percent + '%';
-    if (limitAmount !== undefined && spentAmount > limitAmount)
-      progressBar.style.backgroundColor = '#d9534f';
-    else if (limitAmount !== undefined && spentAmount > 0.9 * limitAmount)
-      progressBar.style.backgroundColor = '#f0ad4e';
-
-    progressDiv.appendChild(progressBar);
-    progressCell.appendChild(progressDiv);
-    row.appendChild(progressCell);
-
-    // Delete limit button
-    const actionCell = document.createElement('td');
-    if (limitAmount !== undefined) {
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'Delete Limit';
-      delBtn.className = 'delete-btn';
+    const delBtn = row.querySelector('.delete-btn');
+    if (delBtn) {
       delBtn.onclick = async () => {
         if (confirm(`Delete limit for "${cat}"?`)) {
           delete data.limits[cat];
-          await saveCurrentData(data);
+          await saveDataToServer();
           updateUI();
         }
       };
-      actionCell.appendChild(delBtn);
     }
-    row.appendChild(actionCell);
+
     tbody.appendChild(row);
   }
 }
 
-function updateExpensesTable(data) {
+function updateExpensesTable() {
   const tbody = document.querySelector('#expenses-table tbody');
   tbody.innerHTML = '';
-
   if (data.expenses.length === 0) {
     const row = document.createElement('tr');
-    const cell = document.createElement('td');
-    cell.colSpan = 5;
-    cell.textContent = 'No expenses recorded.';
-    row.appendChild(cell);
+    row.innerHTML = '<td colspan="5">No expenses recorded.</td>';
     tbody.appendChild(row);
     return;
   }
 
   const sorted = [...data.expenses].sort((a, b) => b.date.localeCompare(a.date));
-
   for (const exp of sorted) {
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -335,7 +267,7 @@ function updateExpensesTable(data) {
     `;
     row.querySelector('button').onclick = async () => {
       data.expenses = data.expenses.filter((e) => e.id !== exp.id);
-      await saveCurrentData(data);
+      await saveDataToServer();
       updateUI();
     };
     tbody.appendChild(row);
