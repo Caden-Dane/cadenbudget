@@ -120,6 +120,31 @@
       <button id="reset-expenses">Reset Budget Progress</button>
     </section>
   </div>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBdpkPurt1_x76tvfTTuwhU0OXQRWwiO-4",
+    authDomain: "budget-ef2bf.firebaseapp.com",
+    projectId: "budget-ef2bf",
+    storageBucket: "budget-ef2bf.firebasestorage.app",
+    messagingSenderId: "1016930929149",
+    appId: "1:1016930929149:web:d94b1231a56c72d9dbf194",
+    measurementId: "G-JLHB0XMHYM"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Expose Firebase objects so your script.js can use them
+  window.firebaseStuff = { auth, signInAnonymously, db, doc, getDoc, setDoc };
+</script>
+
+<script src="script.js" type="module" defer></script>
+
   <script src="script.js" defer></script>
 </body>
 </html>
