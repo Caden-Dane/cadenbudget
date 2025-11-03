@@ -5,10 +5,15 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY_USER1 = 'budgetData_user1';
-  const STORAGE_KEY_USER2 = 'budgetData_user2';
+  // ---- Keys & user handling (hardened) ----
+  const KEYS = { user1: 'budgetData_user1', user2: 'budgetData_user2' };
   const CURRENT_USER_KEY = 'currentUser';
-  
+  const VALID_USERS = new Set(['user1', 'user2']);
+
+  function sanitizeUser(u) {
+    return VALID_USERS.has(u) ? u : 'user1';
+  }
+
   let currentUser = 'user1';
 
   document.addEventListener('DOMContentLoaded', init);
@@ -23,18 +28,17 @@
       alert('Warning: localStorage is not available. Data will not be saved.');
     }
 
-    // Load saved user preference
-    const savedUser = localStorage.getItem(CURRENT_USER_KEY);
-    if (savedUser === 'user1' || savedUser === 'user2') {
-      currentUser = savedUser;
-    }
-    
+    // Load saved user preference (sanitized)
+    const savedUser = sanitizeUser(localStorage.getItem(CURRENT_USER_KEY));
+    currentUser = savedUser;
+
     setupEventListeners();
     updateUI();
   }
 
   function getStorageKey() {
-    return currentUser === 'user1' ? STORAGE_KEY_USER1 : STORAGE_KEY_USER2;
+    // Safely resolve storage key based on sanitized user
+    return KEYS[sanitizeUser(currentUser)];
   }
 
   function getCurrentData() {
@@ -59,7 +63,7 @@
   function setupEventListeners() {
     // User selector
     document.getElementById('user-select').addEventListener('change', (e) => {
-      currentUser = e.target.value;
+      currentUser = sanitizeUser(e.target.value);
       localStorage.setItem(CURRENT_USER_KEY, currentUser);
       updateUI();
     });
@@ -69,12 +73,12 @@
       e.preventDefault();
       const amountInput = document.getElementById('income-amount');
       const amount = parseFloat(amountInput.value);
-      
+
       if (isNaN(amount) || amount <= 0) {
         alert('Please enter a valid income amount greater than 0.');
         return;
       }
-      
+
       const data = getCurrentData();
       data.income += amount;
       saveCurrentData(data);
@@ -111,7 +115,7 @@
 
       warningEl.classList.add('hidden');
       warningEl.textContent = '';
-      
+
       if (limit !== undefined) {
         if (newSpent > limit) {
           warningEl.textContent = `Warning: This expense will exceed your limit for ${category}.`;
@@ -207,8 +211,12 @@
 
   function updateUI() {
     const data = getCurrentData();
-    
-    document.getElementById('user-select').value = currentUser;
+
+    // Reflect the current user selection in the UI
+    const userSelect = document.getElementById('user-select');
+    if (userSelect) {
+      userSelect.value = sanitizeUser(currentUser);
+    }
 
     const totalExpenses = getTotalExpenses(data);
     const remaining = data.income - totalExpenses;
@@ -224,7 +232,7 @@
   function updateCategoriesTable(data) {
     const tbody = document.querySelector('#categories-table tbody');
     tbody.innerHTML = '';
-    
+
     const spent = getSpentByCategory(data);
     const allCategories = new Set([...Object.keys(data.limits), ...Object.keys(spent)]);
 
@@ -242,7 +250,7 @@
       const spentAmount = spent[cat] || 0;
       const limitAmount = data.limits[cat];
       const row = document.createElement('tr');
-      
+
       if (limitAmount !== undefined && spentAmount > limitAmount) {
         row.classList.add('over-limit');
       }
@@ -298,7 +306,9 @@
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Delete Limit';
         delBtn.className = 'delete-btn';
-        delBtn.onclick = function() { deleteLimit(cat); };
+        delBtn.onclick = function () {
+          deleteLimit(cat);
+        };
         actionCell.appendChild(delBtn);
       }
       row.appendChild(actionCell);
@@ -349,7 +359,9 @@
       const delBtn = document.createElement('button');
       delBtn.textContent = 'Delete';
       delBtn.className = 'delete-btn';
-      delBtn.onclick = function() { deleteExpense(exp.id); };
+      delBtn.onclick = function () {
+        deleteExpense(exp.id);
+      };
       actionCell.appendChild(delBtn);
       row.appendChild(actionCell);
 
@@ -374,6 +386,7 @@
   }
 
   function formatCurrency(amount) {
-    return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    const num = Number(amount) || 0;
+    return '$' + num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 })();
